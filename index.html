@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Chat Example</title>
+    <style>
+      html, body {
+        min-height:100%; 
+        padding:0; 
+        margin:0;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .messagesWrap {
+        margin: 3em 5em;
+        height: calc(80vh);
+        overflow-y: scroll;
+        border: 1px solid black;
+      }
+
+      .messages {
+        list-style-type: none;
+        -webkit-padding-end: 40px;
+      }
+
+      .messages li {
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 1em;
+        margin: 1em 0;
+      }
+
+      .messages strong {
+        margin-right: 2em;
+        color: blue;
+      }
+
+      .chat {
+        text-align: center;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        margin: 0 1em;
+      }
+
+      #nameInput {
+        width: 20%;
+        float: left;
+      }
+
+      #messageInput {
+        width: 65%;
+        border-left: 0;
+        border-right: 0;
+        float: left;
+      }
+
+      input {
+        border: 1px solid black;
+        border-bottom: 1px solid black !important;
+        padding: 1em;
+        margin-bottom: 0.5em;
+      }
+
+      input[type=submit] {
+        width: 10%;
+        background: blue;
+        color: white;
+        float: left;
+      }
+      
+    </style>
+  </head>
+  <body>
+    <h1>Chat Example</h1>
+
+    <div class="messagesWrap">
+      <ul id="messages" class="messages"></ul>
+    </div>
+
+    <div class="chat">
+      <form action="">
+        <input type='text' id='nameInput' placeholder='Username' required maxlength=10> 
+        <input type='text' id='messageInput'  placeholder='Input a message...' required maxlength=140>
+        <input type="submit" value="Send">
+      </form>
+    </div>
+
+    <script src="/lib/socket.io.js"></script>
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+
+    <script>
+      var socket = io();
+      $('form').submit(function(){
+        var message = {
+          name: $('#nameInput').val(),
+          content: $('#messageInput').val()
+        };
+
+        socket.emit('chat', message);
+        $('#messageInput').val('');
+
+        return false;
+      });
+      socket.on('chat', function(message){
+        var messageList = $('#messages');
+        var messagesWrap = $('.messagesWrap');
+
+        var nameElement = $('<strong>').text(message.name);
+        var messageElement = $('<li>').text(message.content).prepend(nameElement);
+
+        messageList.append(messageElement);
+        messagesWrap[0].scrollTop = messagesWrap[0].scrollHeight;
+      });
+    </script>
+  </body>
+</html>
