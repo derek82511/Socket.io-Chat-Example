@@ -2,9 +2,17 @@ const config = require('./config');
 
 const path = require('path');
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
 
+const http = require('http').Server(app);
+const io = require('socket.io')(http, { path: config.ContextPath + '/socket.io' });
+const redis = require('socket.io-redis');
+
 app.set('port', (process.env.PORT || 3000));
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -16,6 +24,17 @@ const router = express.Router();
 
 //static content
 router.use('/public', express.static(path.join(__dirname, 'public')));
+
+//api
+router.post('/send', (req, res, next) => {
+    let message = {
+        name: 'system',
+        content: 'this is a test'
+    };
+    io.to(req.body.socketId).emit('chat', message);
+
+    res.send();
+});
 
 //page
 router.use((req, res, next) => {
@@ -29,8 +48,8 @@ router.get('/', function(req, res) {
 //serve for contextPath
 app.use(config.ContextPath, router);
 
-const http = require('http').Server(app);
-const io = require('socket.io')(http, { path: config.ContextPath + '/socket.io' });
+
+io.adapter(redis({ host: 'localhost', port: 6379 }));
 
 io.on('connection', function(socket) {
     let message = {
