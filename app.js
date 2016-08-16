@@ -9,7 +9,9 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http, { path: config.ContextPath + '/socket.io' });
 const redis = require('socket.io-redis');
 
-app.set('port', (process.env.PORT || 3000));
+const instanceId = (process.env.NODE_APP_INSTANCE) ? parseInt(process.env.NODE_APP_INSTANCE) : 0;
+
+app.set('port', 3000 + instanceId);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
